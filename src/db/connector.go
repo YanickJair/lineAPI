@@ -1,9 +1,7 @@
 package db
 
 import (
-	"fmt"
 	"io/ioutil"
-	"log"
 	"sync"
 
 	"github.com/go-pg/pg/v9"
@@ -22,14 +20,17 @@ type dBConfig struct {
 }
 
 func (c *dBConfig) getConfig() *dBConfig {
-	fmt.Println("Loading...")
 	yamlFile, err := ioutil.ReadFile("config/db.yaml")
 	if err != nil {
-		log.Printf("file error #%v", err)
+		panic("DB error: could not loud DB config.yaml file")
 	}
 	err = yaml.Unmarshal(yamlFile, c)
+
+	if len(c.DbName) <= 0 {
+		panic("no db name")
+	}
 	if err != nil {
-		log.Printf("Unmarshal error #%v", err)
+		panic("file error: could not extract from db config file")
 	}
 	return c
 }
