@@ -3,9 +3,9 @@ package models
 import (
 	"apiv1/src/db"
 	"apiv1/src/errors"
+	"apiv1/src/utils"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 //User - user model
@@ -29,7 +29,7 @@ func (user *User) CreateAccount() errors.ErrorCode {
 	}
 
 	user.ID = ID.String()
-	password, err := hashPassword(user.Password)
+	password, err := utils.HashPassword(user.Password)
 
 	if err != nil {
 		panic(err)
@@ -55,22 +55,9 @@ func SignIn(email, password string) (*User, errors.ErrorCode) {
 		return nil, errors.ErrorCode{Message: "Email not found", Code: 201}
 	}
 
-	if ok, _ := checkPasswordHash(password, user.Password); ok {
+	if ok, _ := utils.CheckPasswordHash(password, user.Password); ok {
 		return user, errors.ErrorCode{Message: "Login success", Code: 200}
 	}
 
 	return nil, errors.ErrorCode{Message: "Invalid credentials", Code: 500}
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
-	if err == nil {
-		return string(bytes), nil
-	}
-	return "", err
-}
-
-func checkPasswordHash(password, hash string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil, err
 }
